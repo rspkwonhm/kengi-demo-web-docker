@@ -1,0 +1,52 @@
+services:
+  # Nginx リバースプロキシ
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs:ro
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    restart: unless-stopped
+
+  # Let's Encrypt 自動SSL証明書
+  acme-companion:
+    image: nginxproxy/acme-companion:latest
+    container_name: acme-companion
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs:rw
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+    depends_on:
+      - nginx-proxy
+    restart: unless-stopped
+
+  # Web アプリケーション
+  web:
+    build: .
+    container_name: demo-web-server
+    expose:
+      - "80"
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+    depends_on:
+      - nginx-proxy
+    restart: unless-stopped
+
+volumes:
+  certs:
+  vhost:
+  html:
+  acme:
