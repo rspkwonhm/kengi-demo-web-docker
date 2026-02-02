@@ -232,8 +232,11 @@
         <div class="api-section">
             <h2>🔗 外部 APIM テスト</h2>
             <div class="btn-group">
-                <button class="btn btn-warning" onclick="callApim()">
-                    <span>🌐</span> APIM エンドポイントをテスト
+                <button class="btn btn-warning" onclick="callApim(1)">
+                    <span>🌐</span> APIM #1 エンドポイントをテスト
+                </button>
+                <button class="btn btn-warning" onclick="callApim(2)">
+                    <span>🌐</span> APIM #2 エンドポイントをテスト
                 </button>
             </div>
         </div>
@@ -250,7 +253,10 @@
 
     <script>
         // APIM URL は PHP から環境変数を取得
-        const APIM_URL = '<?php echo getenv("APIM_TEST_URL") ?: ""; ?>';
+        const APIM_URLS = {
+            1: '<?php echo getenv("APIM_TEST_URL") ?: ""; ?>',
+            2: '<?php echo getenv("APIM_TEST_URL_2") ?: ""; ?>'
+        };
 
         async function callApi(endpoint) {
             const responseBox = document.getElementById('responseBox');
@@ -275,24 +281,25 @@
             }
         }
 
-        async function callApim() {
+        async function callApim(num) {
             const responseBox = document.getElementById('responseBox');
             const responseContent = document.getElementById('responseContent');
+            const apimUrl = APIM_URLS[num];
 
             responseBox.classList.add('show');
 
-            if (!APIM_URL) {
+            if (!apimUrl) {
                 responseContent.innerHTML =
                     '<span class="status-indicator status-error"></span>' +
                     '<strong>設定エラー:</strong>\n\n' +
-                    'APIM_TEST_URL が .env に設定されていません。';
+                    'APIM_TEST_URL' + (num === 2 ? '_2' : '') + ' が .env に設定されていません。';
                 return;
             }
 
-            responseContent.innerHTML = '<span class="loading"></span> APIM に接続中...\n' + APIM_URL;
+            responseContent.innerHTML = '<span class="loading"></span> APIM #' + num + ' に接続中...\n' + apimUrl;
 
             try {
-                const response = await fetch(APIM_URL, {
+                const response = await fetch(apimUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json'
@@ -310,14 +317,14 @@
 
                 responseContent.innerHTML =
                     '<span class="status-indicator status-success"></span>' +
-                    '<strong>APIM 応答 (HTTP ' + response.status + ')</strong>\n\n' +
-                    '<strong>URL:</strong> ' + APIM_URL + '\n\n' +
+                    '<strong>APIM #' + num + ' 応答 (HTTP ' + response.status + ')</strong>\n\n' +
+                    '<strong>URL:</strong> ' + apimUrl + '\n\n' +
                     (typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
             } catch (error) {
                 responseContent.innerHTML =
                     '<span class="status-indicator status-error"></span>' +
-                    '<strong>APIM エラー:</strong>\n\n' +
-                    '<strong>URL:</strong> ' + APIM_URL + '\n\n' +
+                    '<strong>APIM #' + num + ' エラー:</strong>\n\n' +
+                    '<strong>URL:</strong> ' + apimUrl + '\n\n' +
                     error.message;
             }
         }

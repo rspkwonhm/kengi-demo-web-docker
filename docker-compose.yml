@@ -42,6 +42,7 @@ services:
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - LETSENCRYPT_HOST=${VIRTUAL_HOST}
       - APIM_TEST_URL=${APIM_TEST_URL}
+      - APIM_TEST_URL_2=${APIM_TEST_URL_2}
     depends_on:
       - nginx-proxy
     restart: unless-stopped
