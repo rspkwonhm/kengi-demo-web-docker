@@ -1,4 +1,7 @@
 RewriteEngine On
 
+# デフォルトページを index.php に設定
+DirectoryIndex index.php
+
 # /api/* 요청을 api.php로 라우팅
 RewriteRule ^api/(.*)$ api.php?endpoint=$1 [QSA,L]

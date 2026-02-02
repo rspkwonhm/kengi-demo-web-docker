@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -108,6 +109,22 @@
             box-shadow: 0 10px 30px rgba(2, 132, 199, 0.4);
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(217, 119, 6, 0.4);
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 24px 0;
+        }
+
         .response-box {
             margin-top: 32px;
             background: rgba(0, 0, 0, 0.3);
@@ -123,8 +140,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .response-label {
@@ -154,7 +178,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .status-indicator {
@@ -165,8 +191,13 @@
             margin-right: 8px;
         }
 
-        .status-success { background: #10b981; }
-        .status-error { background: #ef4444; }
+        .status-success {
+            background: #10b981;
+        }
+
+        .status-error {
+            background: #ef4444;
+        }
 
         footer {
             margin-top: 40px;
@@ -175,6 +206,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🚀 デモ Web サーバー</h1>
@@ -195,6 +227,17 @@
             </div>
         </div>
 
+        <hr class="section-divider">
+
+        <div class="api-section">
+            <h2>🔗 外部 APIM テスト</h2>
+            <div class="btn-group">
+                <button class="btn btn-warning" onclick="callApim()">
+                    <span>🌐</span> APIM エンドポイントをテスト
+                </button>
+            </div>
+        </div>
+
         <div id="responseBox" class="response-box">
             <div class="response-label">API レスポンス</div>
             <div id="responseContent" class="response-content"></div>
@@ -206,28 +249,79 @@
     </div>
 
     <script>
+        // APIM URL は PHP から環境変数を取得
+        const APIM_URL = '<?php echo getenv("APIM_TEST_URL") ?: ""; ?>';
+
         async function callApi(endpoint) {
             const responseBox = document.getElementById('responseBox');
             const responseContent = document.getElementById('responseContent');
-            
+
             responseBox.classList.add('show');
             responseContent.innerHTML = '<span class="loading"></span> 読み込み中...';
 
             try {
                 const response = await fetch(endpoint);
                 const data = await response.json();
-                
-                responseContent.innerHTML = 
+
+                responseContent.innerHTML =
                     '<span class="status-indicator status-success"></span>' +
                     '<strong>成功!</strong>\n\n' +
                     JSON.stringify(data, null, 2);
             } catch (error) {
-                responseContent.innerHTML = 
+                responseContent.innerHTML =
                     '<span class="status-indicator status-error"></span>' +
                     '<strong>エラー:</strong>\n\n' +
                     error.message;
             }
         }
+
+        async function callApim() {
+            const responseBox = document.getElementById('responseBox');
+            const responseContent = document.getElementById('responseContent');
+
+            responseBox.classList.add('show');
+
+            if (!APIM_URL) {
+                responseContent.innerHTML =
+                    '<span class="status-indicator status-error"></span>' +
+                    '<strong>設定エラー:</strong>\n\n' +
+                    'APIM_TEST_URL が .env に設定されていません。';
+                return;
+            }
+
+            responseContent.innerHTML = '<span class="loading"></span> APIM に接続中...\n' + APIM_URL;
+
+            try {
+                const response = await fetch(APIM_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type');
+                let data;
+
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+
+                responseContent.innerHTML =
+                    '<span class="status-indicator status-success"></span>' +
+                    '<strong>APIM 応答 (HTTP ' + response.status + ')</strong>\n\n' +
+                    '<strong>URL:</strong> ' + APIM_URL + '\n\n' +
+                    (typeof data === 'object' ? JSON.stringify(data, null, 2) : data);
+            } catch (error) {
+                responseContent.innerHTML =
+                    '<span class="status-indicator status-error"></span>' +
+                    '<strong>APIM エラー:</strong>\n\n' +
+                    '<strong>URL:</strong> ' + APIM_URL + '\n\n' +
+                    error.message;
+            }
+        }
     </script>
 </body>
+
 </html>
