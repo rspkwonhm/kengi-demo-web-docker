@@ -232,11 +232,11 @@
         <div class="api-section">
             <h2>🔗 外部 APIM テスト</h2>
             <div class="btn-group">
-                <button class="btn btn-warning" onclick="callApim(1)">
-                    <span>🌐</span> APIM #1 エンドポイントをテスト
+                <button class="btn btn-warning" onclick="callApim(1, 'GET')">
+                    <span>🌐</span> APIM #1 (GET)
                 </button>
-                <button class="btn btn-warning" onclick="callApim(2)">
-                    <span>🌐</span> APIM #2 エンドポイントをテスト
+                <button class="btn btn-warning" onclick="callApim(2, 'POST')">
+                    <span>🌐</span> APIM #2 (POST)
                 </button>
             </div>
         </div>
@@ -285,7 +285,7 @@
             }
         }
 
-        async function callApim(num) {
+        async function callApim(num, method = 'GET') {
             const responseBox = document.getElementById('responseBox');
             const responseContent = document.getElementById('responseContent');
             const apimUrl = APIM_URLS[num];
@@ -301,20 +301,28 @@
                 return;
             }
 
-            responseContent.innerHTML = '<span class="loading"></span> APIM #' + num + ' に接続中...\n' + apimUrl;
+            responseContent.innerHTML = '<span class="loading"></span> APIM #' + num + ' (' + method + ') に接続中...\n' + apimUrl;
 
             try {
                 const headers = {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 };
                 if (apimKey) {
                     headers['Ocp-Apim-Subscription-Key'] = apimKey;
                 }
 
-                const response = await fetch(apimUrl, {
-                    method: 'GET',
+                const fetchOptions = {
+                    method: method,
                     headers: headers
-                });
+                };
+
+                // POSTの場合はボディを追加
+                if (method === 'POST') {
+                    fetchOptions.body = JSON.stringify({ test: true, timestamp: Date.now() });
+                }
+
+                const response = await fetch(apimUrl, fetchOptions);
 
                 const contentType = response.headers.get('content-type');
                 let data;
