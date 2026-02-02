@@ -257,6 +257,10 @@
             1: '<?php echo getenv("APIM_TEST_URL") ?: ""; ?>',
             2: '<?php echo getenv("APIM_TEST_URL_2") ?: ""; ?>'
         };
+        const APIM_KEYS = {
+            1: '<?php echo getenv("APIM_TEST_KEY") ?: ""; ?>',
+            2: '<?php echo getenv("APIM_TEST_KEY_2") ?: ""; ?>'
+        };
 
         async function callApi(endpoint) {
             const responseBox = document.getElementById('responseBox');
@@ -285,6 +289,7 @@
             const responseBox = document.getElementById('responseBox');
             const responseContent = document.getElementById('responseContent');
             const apimUrl = APIM_URLS[num];
+            const apimKey = APIM_KEYS[num];
 
             responseBox.classList.add('show');
 
@@ -299,11 +304,16 @@
             responseContent.innerHTML = '<span class="loading"></span> APIM #' + num + ' に接続中...\n' + apimUrl;
 
             try {
+                const headers = {
+                    'Accept': 'application/json'
+                };
+                if (apimKey) {
+                    headers['Ocp-Apim-Subscription-Key'] = apimKey;
+                }
+
                 const response = await fetch(apimUrl, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: headers
                 });
 
                 const contentType = response.headers.get('content-type');
