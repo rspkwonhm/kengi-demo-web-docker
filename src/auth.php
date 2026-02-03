@@ -167,6 +167,15 @@ class EntraIdAuth
             throw new Exception('Invalid JWKS response');
         }
         
+        // Microsoft JWKS は 'alg' パラメータがない場合があるため、手動で追加
+        foreach ($jwksData['keys'] as &$key) {
+            if (!isset($key['alg'])) {
+                // RSA keys from Microsoft typically use RS256
+                $key['alg'] = 'RS256';
+            }
+        }
+        unset($key);
+        
         $this->jwks = JWK::parseKeySet($jwksData);
         $this->jwksCacheTime = time();
         
