@@ -8,9 +8,25 @@
  * - GET /api/time   : 現在時刻を返す
  */
 
+// Entra ID 認証ミドルウェアを読み込む
+require_once __DIR__ . '/auth.php';
+
+// 認証を実行（失敗時は401で終了）
+$authResult = $entraIdAuth->authenticate();
+if ($authResult === null) {
+    exit; // authenticate() 内で401レスポンス済み
+}
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Authorization, Content-Type');
+
+// OPTIONS プリフライトリクエスト対応
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 $endpoint = $_GET['endpoint'] ?? '';
 

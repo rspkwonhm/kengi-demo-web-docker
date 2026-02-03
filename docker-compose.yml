@@ -12,4 +12,6 @@ services:
       - APIM_TEST_KEY=${APIM_TEST_KEY}
       - APIM_TEST_URL_2=${APIM_TEST_URL_2}
       - APIM_TEST_KEY_2=${APIM_TEST_KEY_2}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
     restart: unless-stopped
