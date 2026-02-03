@@ -5,8 +5,8 @@ services:
     container_name: demo-web-server
     ports:
       - "80:80"
-    volumes:
-      - ./src:/var/www/html
+    # Note: volume mount removed - vendor folder from build is preserved
+    # For development, rebuild with: docker compose build --no-cache
     environment:
       - APIM_TEST_URL=${APIM_TEST_URL}
       - APIM_TEST_KEY=${APIM_TEST_KEY}

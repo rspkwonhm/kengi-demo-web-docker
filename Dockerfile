@@ -15,12 +15,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 작업 디렉토리 설정
 WORKDIR /var/www/html
 
-# Composer 依存関係ファイルをコピーしてインストール
-COPY src/composer.json /var/www/html/
-RUN composer install --no-dev --optimize-autoloader || true
-
-# 소스 복사
+# 소스 전체 복사 (composer.json 포함)
 COPY src/ /var/www/html/
+
+# Composer 依存関係インストール (vendor フォルダ生成)
+RUN composer install --no-dev --optimize-autoloader
 
 # Apache 설정 - .htaccess 허용
 RUN echo '<Directory /var/www/html>\n\
